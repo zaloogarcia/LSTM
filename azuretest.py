@@ -5,6 +5,7 @@ from azureml.exceptions import ComputeTargetException
 from azureml.core.image import ContainerImage
 from azureml.core import ScriptRunConfig, Experiment
 from azureml.core.model import Model
+from azureml.core.model import upload_dependency
 from azureml.core.conda_dependencies import CondaDependencies
 from azureml.core.webservice import AciWebservice, Webservice
 
@@ -28,14 +29,14 @@ run_local.environment.python.user_managed_dependencies = True
 # run = exp.submit(src)
 # run.wait_for_completion(show_output=True)
 
-model = Model.register(model_path="./model/model.json",
-                       model_name="model.json",
+model = Model.register(model_path="model",
+                       model_name="model",
                        tags={'type': "RNN", 'version': 55},
                        description="LSTM model to predict sales",
                        workspace=ws)
 
 
-env = CondaDependencies.create(conda_packages=['keras', 'pandas'])
+env = CondaDependencies.create(conda_packages=['keras', 'pandas', 'scikit-learn'])
 
 env.save_to_file(base_directory='./', conda_file_path='env.yml')
 

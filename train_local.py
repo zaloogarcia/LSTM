@@ -6,7 +6,9 @@ from keras.models import Sequential
 from keras.layers import Dense, LSTM
 from azureml.core.run import Run
 from math import sqrt
+import matplotlib
 from matplotlib import pyplot as plt
+matplotlib.use('TkAgg') # For MACOS
 import numpy as np
 import os, pickle
 
@@ -84,8 +86,8 @@ def forecast_lstm(model, batch_size, X):
     yhat = model.predict(X, batch_size=batch_size)
     return yhat[0, 0]
 
-os.makedirs('./outputs', exist_ok=True)
-os.makedirs('./model', exist_ok=True)
+os.makedirs('outputs', exist_ok=True)
+os.makedirs('model', exist_ok=True)
 # sc = SparkContext.getOrCreate()
 # sqlc = SQLContext(sc)
 # spark = sqlc.sparkSession
@@ -106,6 +108,7 @@ div = int(data_length * 0.3)
 train, test = supervised_values[0:-div], supervised_values[-div:]
 
 scaler, train_scaled, test_scaled = scale(train, test)
+print(scaler)
 neurons = 6
 batches = 2000
 run.log('neurons', neurons)
@@ -118,13 +121,14 @@ predicts = list()
 
 for i in range(len(test_scaled)):
     X, y = test_scaled[i, 0:-1], test_scaled[i, -1]
+    print(X)
     yhat = forecast_lstm(lstm_model, 1, X)
     yhat = invert_scale(scaler, X, yhat)
     yhat = inverse_difference(raw_values, yhat, len(test_scaled) + 1 - i)
     run.log('Predicted y', yhat)
-    print(yhat)
     predicts.append(yhat)
     expected = raw_values[len(train) + i + 1]
+    print(raw_values[len(train) +i ], expected)
     run.log('True Value', expected)
     print('Day=%d, Predicted=%f, Expected=%f' % (i + 1, yhat, expected))
 
@@ -132,10 +136,10 @@ rmse = sqrt(mean_squared_error(raw_values[-div:], predicts))
 run.log('Mean squared error', rmse)
 print('Test RMSE: %.3f' % rmse)
 
-print("Going to plot")
-plt.title('LSTM with ' + str(neurons) + 'Neurons')
-plt.plot(raw_values[-div:], label='True')
-plt.plot(predicts, '-r', label='Prediction')
-plt.legend(loc='best')
-
-run.log_image('Prediction', plot=plt)
+# print("Going to plot")
+# plt.title('LSTM with ' + str(neurons) + 'Neurons')
+# plt.plot(raw_values[-div:], label='True')
+# plt.plot(predicts, '-r', label='Prediction')
+# plt.legend(loc='best')
+#
+# run.log_image('Prediction', plot=plt)
