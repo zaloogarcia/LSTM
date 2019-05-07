@@ -15,8 +15,7 @@ for i in range(1,30):
 
 test_sample = json.dumps({"dates": test_sample})
 test_sample = bytes(test_sample, encoding='utf8')
-# headers = {'Content-Type':'application/json', 'Authorization': 'Bearer ' + key}
+headers = {'Content-Type':'application/json', 'Authorization': 'Bearer ' + key}
 
-print(pd.DataFrame(json.loads(test_sample)["dates"]))
-
-print(service.run(input_data=test_sample))
+resp = requests.post(service.scoring_uri, test_sample, headers=headers)
+print(resp.text)

@@ -29,7 +29,6 @@ def init():
     json_file = open(os.path.join(model_path, 'model.json'), 'r')
     loaded_model_json = json_file.read()
     json_file.close()
-    print(loaded_model_json)
     model = keras.models.model_from_json(loaded_model_json)
     model.load_weights(os.path.join(model_path, "model.h5"))
     scaler = MinMaxScaler(feature_range=(-1,1))
@@ -53,6 +52,5 @@ def run(raw_data):
             prediction.append(yhat)
         return prediction
 
-    except Exception as e:
-        error = str(e)
-        return error
+    except BaseException as e:
+        return str(e.args)
